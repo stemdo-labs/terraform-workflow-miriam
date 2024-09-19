@@ -59,7 +59,7 @@ jobs:
           message: ${{ steps.tfplan.outputs.plan }}
 
       - name: Terraform Apply
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           terraform apply -auto-approve \
           -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
