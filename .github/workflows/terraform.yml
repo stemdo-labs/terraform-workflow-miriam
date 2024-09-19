@@ -29,12 +29,12 @@ jobs:
           terraform_version: 1.4.0
 
       - name: Terraform Init
-        working-directory: ./terraform-repo
+        working-directory: ./
         run: terraform init
 
       - name: Terraform Plan
         if: github.event_name == 'pull_request'
-        working-directory: ./terraform-repo
+        working-directory: ./
         run: |
           terraform plan -no-color -out=plan.tfout \
           -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
@@ -45,7 +45,7 @@ jobs:
       - name: Post Plan result as PR comment
         if: github.event_name == 'pull_request'
         id: tfplan
-        working-directory: ./terraform-repo
+        working-directory: ./
         run: |
           terraform show -json plan.tfout > plan.json
           PLAN=$(terraform show -no-color plan.tfout)
@@ -64,7 +64,7 @@ jobs:
 
       - name: Terraform Apply
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        working-directory: ./terraform-repo
+        working-directory: ./
         run: |
           terraform apply -auto-approve \
           -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
@@ -74,7 +74,7 @@ jobs:
 
       - name: Terraform Destroy
         if: github.event_name == 'workflow_dispatch'
-        working-directory: ./terraform-repo
+        working-directory: ./
         run: |
           terraform destroy -auto-approve \
           -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
