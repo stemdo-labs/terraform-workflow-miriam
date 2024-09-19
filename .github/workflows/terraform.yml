@@ -29,12 +29,16 @@ jobs:
         terraform_version: 1.4.0
 
     - name: Terraform Init
-      working-directory: ./terraform-miriam
+      working-directory: ./terraform-repo
       run: terraform init
 
     - name: Terraform Plan
       if: github.event_name == 'pull_request'
-      run: terraform plan -no-color -out=plan.tfout \ -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \ -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \ -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \ -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}" \ -var "location=${{ secrets.AZURE_LOCATION }}"
+      run: terraform plan -no-color -out=plan.tfout \
+        -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+        -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+        -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+        -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}"
 
     - name: Post Plan result as PR comment
       if: github.event_name == 'pull_request'
@@ -45,21 +49,29 @@ jobs:
         echo "Plan output: $PLAN"
         echo "::set-output name=plan::$PLAN"
       env:
-        GITHUB_TOKEN: ${{ secrets.tTOKEN_TERRAFORM_SECRET }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # token-terraform
 
     - name: Create PR comment with plan
       if: github.event_name == 'pull_request'
       uses: marocchino/sticky-pull-request-comment@v2
       with:
-        token: ${{ secrets.TOKEN_TERRAFORM_SECRET }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # token-terraform
         header: "Terraform Plan"
         message: ${{ steps.tfplan.outputs.plan }}
 
     - name: Terraform Apply
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      run: terraform apply -auto-approve \ -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \ -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \ -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \ -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}" \ -var "location=${{ secrets.AZURE_LOCATION }}"
+      run: terraform apply -auto-approve \
+        -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+        -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+        -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+        -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}"
 
     - name: Terraform Destroy
       if: github.event_name == 'workflow_dispatch'
       working-directory: ./terraform-repo
-      run: terraform destroy -auto-approve -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \ -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \ -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \ -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}" \ -var "location=${{ secrets.AZURE_LOCATION }}"
+      run: terraform destroy -auto-approve \
+        -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+        -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+        -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+        -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}"
