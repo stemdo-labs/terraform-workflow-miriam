@@ -66,3 +66,12 @@ jobs:
           TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform apply -auto-approve
+
+      - name: Terraform Destroy
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          terraform destroy -auto-approve \
+          -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+          -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+          -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+          -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}"
