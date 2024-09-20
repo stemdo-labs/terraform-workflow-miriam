@@ -58,14 +58,14 @@ jobs:
       #     header: "Terraform Plan"
       #     message: ${{ steps.tfplan.outputs.plan }}
 
-      # - name: Terraform Apply
-      #   if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-      #   env:
-      #     TF_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
-      #     TF_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-      #     TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      #     TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
-      #   run: terraform apply -auto-approve
+      - name: Terraform Apply
+        if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          TF_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          TF_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+        run: terraform apply -auto-approve
 
       - name: Terraform Destroy
         if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
