@@ -39,33 +39,33 @@ jobs:
           TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform plan -no-color -out=plan.tfout
 
-      # - name: Post Plan result as PR comment
-      #   if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
-      #   id: tfplan
-      #   run: |
-      #     terraform show -json plan.tfout > plan.json
-      #     PLAN=$(terraform show -no-color plan.tfout)
-      #     echo "Plan output: $PLAN"
-      #     echo "::set-output name=plan::$PLAN"
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Post Plan result as PR comment
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        id: tfplan
+        run: |
+          terraform show -json plan.tfout > plan.json
+          PLAN=$(terraform show -no-color plan.tfout)
+          echo "Plan output: $PLAN"
+          echo "::set-output name=plan::$PLAN"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Create PR comment with plan
-      #   if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
-      #   uses: marocchino/sticky-pull-request-comment@v2
-      #   with:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     header: "Terraform Plan"
-      #     message: ${{ steps.tfplan.outputs.plan }}
+      - name: Create PR comment with plan
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          header: "Terraform Plan"
+          message: ${{ steps.tfplan.outputs.plan }}
 
-      # - name: Terraform Apply
-      #   if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-      #   env:
-      #     TF_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
-      #     TF_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-      #     TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      #     TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
-      #   run: terraform apply -auto-approve
+      - name: Terraform Apply
+        if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          TF_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          TF_VAR_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+        run: terraform apply -auto-approve
 
       - name: Terraform Destroy
         if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
