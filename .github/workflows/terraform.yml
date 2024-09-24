@@ -69,8 +69,9 @@ jobs:
           message: |
             <details>
               <summary>View Terraform Plan Output</summary>
+
               ```hcl
-                ${{ steps.plan.outputs.plan_result }}
+              ${{ steps.plan.outputs.plan_result }}
               ```
             </details>
           append: false
