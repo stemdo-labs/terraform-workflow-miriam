@@ -37,8 +37,9 @@ jobs:
 
       # Inicializar Terraform desde el subdirectorio donde se clonaron los archivos .tf
       - name: Terraform Init
+        working-directory: ./terraform-files
         run: |
-          terraform init -input=false -chdir=./terraform-files
+          terraform init -input=false
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
