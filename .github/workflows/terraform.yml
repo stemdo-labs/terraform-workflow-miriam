@@ -33,7 +33,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.4.0
+          terraform_version: 1.9.6
 
       # Inicializar Terraform desde el subdirectorio donde se clonaron los archivos .tf
       - name: Terraform Init
