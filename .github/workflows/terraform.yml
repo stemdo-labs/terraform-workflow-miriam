@@ -41,11 +41,6 @@ jobs:
         with:
           terraform_version: 1.9.6
 
-      # Autenticarse en Azure
-      # - name: Azure Login
-      #   run: |
-      #     az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-
       # Inicializar Terraform desde el subdirectorio donde se clonaron los archivos .tf
       - name: Terraform Init
         working-directory: ./terraform-files
@@ -54,33 +49,27 @@ jobs:
 
       # Planear cambios
       - name: Terraform Plan
-        if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         working-directory: ./terraform-files
         run: |
-          terraform plan -lock=false
+          terraform plan -lock=false -out=tfplan
+          terraform show -no-color tfplan > plan.txt
 
-      # - name: Post Plan result as PR comment
-      #   if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
-      #   id: tfplan
-      #   run: |
-      #     terraform show -json plan.tfout > plan.json
-      #     PLAN=$(terraform show -no-color plan.tfout)
-      #     echo "Plan output: $PLAN"
-      #     echo "::set-output name=plan::$PLAN"
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Create PR comment with plan
-      #   if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
-      #   uses: marocchino/sticky-pull-request-comment@v2
-      #   with:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     header: "Terraform Plan"
-      #     message: ${{ steps.tfplan.outputs.plan }}
+      # Publicar resultado del plan como comentario en el PR
+      - name: Post Plan result as PR comment
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          header: "Terraform Plan Result"
+          message: |
+            ```plaintext
+            $(cat plan.txt)
+            ```
 
       # Aplicar cambios
       - name: Terraform Apply
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
         working-directory: ./terraform-files
         run: terraform apply -auto-approve
 
