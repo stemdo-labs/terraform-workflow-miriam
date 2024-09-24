@@ -67,9 +67,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           header: Terraform Plan Result
           message: |
-            ```hcl
-              ${{ steps.plan.outputs.plan_result }}
-            ```
+            <details>
+              <summary>View Terraform Plan Output</summary>
+              ```terraform
+                ${{ steps.plan.outputs.plan_result }}
+              ```
+            </details>
           append: false
 
       # Aplicar cambios
