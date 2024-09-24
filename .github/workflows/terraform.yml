@@ -91,4 +91,3 @@ jobs:
         if: github.event_name == 'pull_request'
         working-directory: ./terraform-files
         run: terraform destroy -auto-approve
-
