@@ -59,6 +59,7 @@ jobs:
           cat plan.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+      # Publicar resultado del plan como comentario en el PR
       - name: Post Plan result as PR comment
         if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
@@ -67,9 +68,6 @@ jobs:
           header: Terraform Plan Result
           message: ${{ steps.plan.outputs.plan_result }}
           append: false
-
-      - name: Debug Plan Result
-        run: echo "${{ steps.plan.outputs.plan_result }}"
 
       # Aplicar cambios
       - name: Terraform Apply
