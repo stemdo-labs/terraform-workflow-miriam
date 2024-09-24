@@ -13,6 +13,12 @@ concurrency:
   group: terraform-ops
   cancel-in-progress: true
 
+env:
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -45,11 +51,6 @@ jobs:
         working-directory: ./terraform-files
         run: |
           terraform init
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
       # Planear cambios
       - name: Terraform Plan
@@ -57,16 +58,7 @@ jobs:
         working-directory: ./terraform-files
         run: |
           terraform plan -lock=false
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        #\
-        # -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
-        # -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
-        # -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-        # -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}"
+
 
       # - name: Post Plan result as PR comment
       #   if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
@@ -90,31 +82,13 @@ jobs:
       # Aplicar cambios
       - name: Terraform Apply
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        # env:
-        #   ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        #   ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        #   ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        #   ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         working-directory: ./terraform-files
-        run: |
-            terraform apply -auto-approve \
-            -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
-            -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
-            -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}"
+        run: terraform apply -auto-approve
+
 
       # Destruir recursos
       - name: Terraform Destroy
         if: github.event_name == 'pull_request'
         working-directory: ./terraform-files
-        # env:
-        #   ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        #   ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        #   ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        #   ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        run: |
-            terraform destroy -auto-approve  -chdir=./terraform-files \
-            -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
-            -var "client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
-            -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-            -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}"
+        run: terraform destroy -auto-approve
+
