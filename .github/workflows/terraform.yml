@@ -54,7 +54,7 @@ jobs:
         working-directory: ./terraform-files
         run: |
           terraform plan -lock=false -out=tfplan
-          terraform show -no-color tfplan > plan.txt
+          terraform show -no-color tfplan | awk 'BEGIN {found=0} /^$/ {if (found) {exit}} {if (found) print} /^$/ {found=1}' > plan.txt || echo "No changes." > plan.txt
           echo "plan_result<<EOF" >> $GITHUB_OUTPUT
           cat plan.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
