@@ -55,7 +55,8 @@ jobs:
         run: |
           terraform plan -lock=false -out=tfplan
           terraform show -no-color tfplan > plan.txt
-          echo "plan_result=$(cat plan.txt)" >> $GITHUB_OUTPUT
+          plan_output=$(cat plan.txt | sed 's/%/%25/g; s/\n/%0A/g; s/\r/%0D/g')
+          echo "plan_result=$plan_output" >> $GITHUB_OUTPUT
 
       # Publicar el resultado del plan como comentario en el PR
       - name: Post Plan result as PR comment
