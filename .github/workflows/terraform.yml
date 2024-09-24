@@ -49,7 +49,7 @@ jobs:
 
       # Planear cambios
       - name: Terraform Plan
-        id: plan
+        id: tf_plan
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         working-directory: ./terraform-files
         run: |
@@ -65,7 +65,7 @@ jobs:
           header: "Terraform Plan Result"
           message: |
             ```plaintext
-            $(cat plan.txt)
+            $(cat terraform-files/plan.txt)
             ```
 
       # Aplicar cambios
