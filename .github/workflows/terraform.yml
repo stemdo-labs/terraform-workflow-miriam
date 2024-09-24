@@ -59,7 +59,6 @@ jobs:
         run: |
           terraform plan -lock=false
 
-
       # - name: Post Plan result as PR comment
       #   if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
       #   id: tfplan
@@ -85,9 +84,8 @@ jobs:
         working-directory: ./terraform-files
         run: terraform apply -auto-approve
 
-
       # Destruir recursos
       - name: Terraform Destroy
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         working-directory: ./terraform-files
         run: terraform destroy -auto-approve
