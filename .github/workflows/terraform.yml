@@ -47,14 +47,14 @@ jobs:
         run: |
           terraform init
 
-      # Planear cambios
+      # Planear cambios ( terraform show -no-color tfplan | awk 'BEGIN {found=0} /^$/ {if (found) {exit}} {if (found) print} /^$/ {found=1}' > plan.txt || echo "No changes." > plan.txt )
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         working-directory: ./terraform-files
         run: |
           terraform plan -lock=false -out=tfplan
-          terraform show -no-color tfplan | awk 'BEGIN {found=0} /^$/ {if (found) {exit}} {if (found) print} /^$/ {found=1}' > plan.txt || echo "No changes." > plan.txt
+          terraform show -no-color tfplan > plan.txt
           echo "plan_result<<EOF" >> $GITHUB_OUTPUT
           cat plan.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
