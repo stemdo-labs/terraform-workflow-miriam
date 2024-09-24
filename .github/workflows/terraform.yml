@@ -9,7 +9,6 @@ on:
       - main
   workflow_dispatch:
 
-# garantiza que solo haya una ejecución en el workflow en progreso a la vez, cancelando cualquier ejecución en curso si otra se inicia.
 concurrency:
   group: terraform-ops
   cancel-in-progress: true
@@ -19,19 +18,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Clonar el repositorio del workflow
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      # Clonar el repositorio que contiene los archivos .tf en un subdirectorio 'terraform-files'
       - name: Checkout Terraform repository
         uses: actions/checkout@v2
         with:
           repository: stemdo-labs/terraform-miriam
+          path: terraform-files
 
+      # Configurar Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.4.0
 
+      # Inicializar Terraform desde el subdirectorio donde se clonaron los archivos .tf
       - name: Terraform Init
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -39,7 +43,9 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform init
+        working-directory: ./terraform-files
 
+      # Planear cambios
       - name: Terraform Plan
         if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
@@ -47,11 +53,8 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          client_id: ${{ secrets.AZURE_CLIENT_ID }}
-          client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          tenant_id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terraform plan -lock=false
+        working-directory: ./terraform-files
 
       # - name: Post Plan result as PR comment
       #   if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
@@ -72,20 +75,24 @@ jobs:
       #     header: "Terraform Plan"
       #     message: ${{ steps.tfplan.outputs.plan }}
 
+      # Aplicar cambios
       - name: Terraform Apply
-        if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform apply -auto-approve
+        working-directory: ./terraform-files
 
+      # Destruir recursos
       - name: Terraform Destroy
-        if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'pull_request'
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform destroy -auto-approve
+        working-directory: ./terraform-files
