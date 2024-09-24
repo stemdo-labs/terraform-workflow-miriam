@@ -66,6 +66,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           header: Terraform Plan Result
           message: ${{ steps.plan.outputs.plan_result }}
+          append: false
+
+      - name: Debug Plan Result
+        run: echo "${{ steps.plan.outputs.plan_result }}"
 
       # Aplicar cambios
       - name: Terraform Apply
