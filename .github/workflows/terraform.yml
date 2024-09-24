@@ -49,26 +49,23 @@ jobs:
 
       # Planear cambios
       - name: Terraform Plan
-        id: plan_step
+        id: plan
         if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         working-directory: ./terraform-files
         run: |
           terraform plan -lock=false -out=tfplan
           terraform show -no-color tfplan > plan.txt
-          plan_output=$(cat plan.txt | sed 's/%/%25/g; s/\n/%0A/g; s/\r/%0D/g')
-          echo "plan_result=$plan_output" >> $GITHUB_OUTPUT
+          echo "plan_result<<EOF" >> $GITHUB_ENV
+          cat plan.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-      # Publicar el resultado del plan como comentario en el PR
       - name: Post Plan result as PR comment
-        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          header: "Terraform Plan Result"
-          message: |
-            ```plaintext
-            ${{ steps.plan_step.outputs.plan_result }}
-            ```
+          header: Terraform Plan Result
+          message: ${{ steps.plan.outputs.plan_result }}
 
       # Aplicar cambios
       - name: Terraform Apply
