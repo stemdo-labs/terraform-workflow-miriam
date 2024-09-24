@@ -9,9 +9,9 @@ on:
       - main
   workflow_dispatch:
 
-concurrency:
-  group: terraform-ops
-  cancel-in-progress: true
+# concurrency:
+#   group: terraform-ops
+#   cancel-in-progress: true
 
 env:
   ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
